@@ -1,4 +1,4 @@
-# 3SAT Problem (aka Boolean satisfiability problem)
+# 3SAT Problem (aka Boolean satisfiability problem) 💩💩💩
 
 Implementation of 3-SAT problem using genetic algorithm.
 
