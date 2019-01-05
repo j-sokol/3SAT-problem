@@ -83,7 +83,11 @@ w 2 4 6 8 4 2
 Díky tomu jsou do CNF přidány též váhy jednotlivých proměnných. Tyto hodnoty jsou obsaženy na řádku (začínajícím s w) pod definicí problému (začínajícím s p).
 
 
-Z prezentace Stochastic Search And Phase Transitions: AI Meets Physics víme, že nejtěžší  3SAT problémy mají poměr 4.3(poměr klauzulí ku počtu proměnných). Na tyto instance se budeme nejvíce zaměřovat.
+Z prezentace Stochastic Search And Phase Transitions: AI Meets Physics víme, že nejtěžší  3SAT problémy mají poměr 4.3 (poměr klauzulí ku počtu proměnných). Na tyto instance se budeme nejvíce zaměřovat.
+
+
+Všechny zvolené instance dat, které budou měřena, jsou s 20-ti proměnnými, liší se v počtu klauzulí, konkrétně je to 45, 70 a 91. V závěru práce se pak pokusím spustit algoritmus i na těžší varianty s větším počtem proměnných - instance s 218 klauzulemi a 50 proměnnými (odpovídá poměru 4.36, tedy nejtěžší problémy).
+
 % The problem of determining the maximum number of clauses, of a given Boolean formula, that can be satisfied by some assignment.
 
 % Weighted MAX-SAT asks for the maximum weight which can be satisfied by any assignment, given a set of weighted clauses.
@@ -109,6 +113,8 @@ kde $C_X$ je počet splněných klauzulí stavu $X$, $C_{total}$ počet klauzul�
 
 k je zde koeficient chtěné vlastnosti. Pro hodnotu 0 preferujeme pouze co nejvyšší součet vah, pro hodnotu 1 bychom preferovali pouze co nejvíce splněných klauzulí.
 
+
+Pozn. v grafech níže je výsledek fitness funkce vynásoben tisícem, pro lepší zobrazení v grafech.
 % Cílem je zvolit tuto hodnotu k co nejrozumněji. Hodnota musí být vyšší, než 0.5, jelikož chceme vyjádřit penalizaci za nesprávné řešení, ale zároveň musí být nižší, než 1, jinak bychom součty vah ignorovali a hledali jen splnitelnost.
 
 \section{Výběr jazyka}
@@ -200,18 +206,187 @@ for generation in range(0, self.generations):
    \end{verbatim}
 
 
+\subsection{Výběr parametrů evoluce}
+
+Evoluční algoritmus v přiloženém kódu lze konfigurovat následujícími parametry:
+\begin{itemize}
+
+   \item Velikost populace
+   \item Počet generací
+   \item Pravděpodobnost křížení
+   \item Pravděpodobnost mutace
+   \item Velikost turnaje
+   \item Elitismus
+\end{itemize}
+
 
 
 
 \subsection{Experimenty s nastavením parametrů}
 
 
-Různě jsem nastavoval parametry genetického algoritmu - pravděpodobnost křížení, pravděpodobnost mutace, elitismus, velikost turnaje, počet turnajů a počet generací. Z grafů jsem poté usoudil, které hodnoty jednotlivých parametrů jsou nejlepší.
+Ze začátku jsem vybral stejné parametry, jako u problému batohu. S tím, že mám na paměti, že SAT problém může vyžadovat velmi rozdílné nastavení parametrů.
 
 
-Křížení
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[height=6cm]{graphs/default-params.png}
+  \end{center}
+  % \caption{Graf vývoje fitness}\label{fig1}
+\end{figure}
+
+
+Tyto výsledky nevypadají vůbec špatně. Například u instance s 45 klauzulemi a 20 proměnnými (té z jednodužších instancí) je výsledná fitness 9961,  což je velmi blízko maximálnímu 10000. Díky tomu můžeme i předpokládat, že se jedná o optimální řešení. 
+
+Na grafech vidíme, že řešení konvergují velmi rychle - kvůli tomu existuje možnost, že můžeme se zaseknout v lokálním maximu.
+
+45-default-params: \\
+\begin{tabular}{lrrrrrl}
+\toprule
+       price &  variables &  clausules &  satisfied &  weight &  valid \\
+\hline
+
+\midrule
+ 9961 &         20 &         45 &         45 &     925 &   True \\
+\bottomrule
+\end{tabular}
+\\
+
+
+70-default-params: \\
+\begin{tabular}{lrrrrrl}
+\toprule
+       price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+\hline
+
+9828 &         20 &         70 &         70 &     783 &   True \\
+\bottomrule
+\end{tabular}
+
+
+
+\\
+
+
+
+91-default-params: \\
+\begin{tabular}{lrrrrrl}
+\toprule
+    price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+\hline
+
+ 9633 &         20 &         91 &         91 &     534 &   True \\
+\bottomrule
+\end{tabular}
+
+
+Jak vidíme, tak i kvalita je dobrá. U všech instancí se povedlo nalézt řešení.
+
+% Různě jsem nastavoval parametry genetického algoritmu - pravděpodobnost křížení, pravděpodobnost mutace, elitismus, velikost turnaje, počet turnajů a počet generací. Z grafů jsem poté usoudil, které hodnoty jednotlivých parametrů jsou nejlepší.
+
+
+\subsection{Náhodnost}
+
+Chceme ověřit, zda náhodnost ovlivňuje výsledky řešení algoritmu. Proto instanci spustíme v 10 bězích a výsledky porovnáme.
+
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[height=6cm]{graphs/randomness.png}
+  \end{center}
+  % \caption{Graf vývoje fitness}\label{fig1}
+\end{figure}
+
+
+Všechny tyto instance byly splnitelné a nalezly řešení s fitness lepším, než 9800. Díky tomu soudím, že na data se lze spolehnout.
+
+\subsection{Problém rychlé konvergence}
+
+
+Rychlou konvergenci k lokálnímu maximu lze vyřešit zvýšením pravděpodobnosti mutace, zvětšení velikosti turnaje a redukcí elitismu.
+
+Experimentálně jsem upravoval parametry tímto směrem. Mutace sice může mít za následek zničení cenných potomků, ale zavede nás na jiná místa stavového prostoru. Navíc s takto strmou konvergencí si to do jisté míry můžeme dovolit.
+
+Zvýšil jsem parametr pravděpodobnosti mutace z 0.1 na 0.5, elitimus z dvou jedinců na jednoho, a nastavil velikost turnaje na 6. Konvergence již není tak rychlá, mělo by docházet k širšímu prohledávání stavového prostoru.
+
+
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[height=6cm]{graphs/convergence-fix.png}
+  \end{center}
+  % \caption{Graf vývoje fitness}\label{fig1}
+\end{figure}
+
+
+
+
+\\
+45-convergence-fix:\\
+
+
+
+\begin{tabular}{lrrrrrl}
+\toprule
+        price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+\hline
+
+ 9947 &         20 &         45 &         45 &     911 &   True \\
+\bottomrule
+\end{tabular}
+\\
+
+
+
+70-convergence-fix:\\
+
+
+
+\begin{tabular}{lrrrrrl}
+\toprule
+        price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+\hline
+
+ 9758 &         20 &         70 &         70 &     701 &   True \\
+\bottomrule
+\end{tabular}
+\\
+
+
+
+91-convergence-fix: \\
+
+
+\begin{tabular}{lrrrrrl}
+\toprule
+        price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+\hline
+
+ 9627 &         20 &         91 &         91 &     524 &   True \\
+\bottomrule
+\end{tabular}
+\\
+
+Jak vidíme tak při této změně jsme schopni nalézt správná řešení i po generaci 600+. Může se také ale velmi často stát, že správné řešení nenalezneme. Tak to dopadá u instance s 91 klauzulemi:
+
+91-convergence-fix:\\
+\begin{tabular}{lrrrrrl}
+\toprule
+        price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+\hline
+
+ 9628 &         20 &         91 &         90 &     665 &  False \\
+\bottomrule
+\end{tabular}
+\\
 \subsection{Pravděpodobnost křížení}
-Doporučená pravděpodobnost křížení je 80-95\% (Beasley, 1993). Pomocí selského rozumu také lze usoudit, že malá pravděpodobnost křížení snižuje rychlost konvergence a v případě velmi malé hodnoty vůbec zastaví genetický algoritmus. Avšak pravděpodobnost 100\% taky není dobrá, jelikož //vždy// ztrácíme rodiče bez jistoty objevu lepšího potomka (algoritmus by měl zachovat "náhodnost" a tím i divergenci populace). Proto byly testovány následující hodnoty: 70\%, 75\%, 80\%, 85\%, 90\%, 95\%, 97\%.
+Doporučená pravděpodobnost křížení je 80-95\% (Beasley, 1993). Pomocí selského rozumu také lze usoudit, že malá pravděpodobnost křížení snižuje rychlost konvergence a v případě velmi malé hodnoty vůbec zastaví genetický algoritmus. Avšak pravděpodobnost 100\% taky není dobrá, jelikož ztrácíme rodiče bez jistoty objevu lepšího potomka (algoritmus by měl zachovat "náhodnost" a tím i divergenci populace).
 
 Osobně hodnotím 0.3 až 0.4 jako nejlepší hodnotu pravděpodobnosti křížení. Při pravděpodobnosti 0.7 a více ani nebylo možné dosáhnout optimální hodnoty.
 
@@ -305,16 +480,105 @@ Jako moment pro ukončení evoluce jsem vybral 1000 generací, ikdyž jak vidím
 \end{figure}
 
 
+\section{Výsledná konfigurace}
+
+\begin{tabular}{l|l}
+Velikost populace       & 100  \\
+Počet generací          & 1000 \\
+Elitismus               & 2    \\
+Velikost turnaje        & 16   \\
+Pravděpodobnost mutace  & 0.5  \\
+Pravděpodobnost křížení & 0.5 
+\end{tabular}
+
+\section{Řešení složitějších instancí}
+
+Jednodužší instance (tj. velikosti 40, 70, 91 klauzulí) jsou již řešeny výše.
+
+Pro ukázku ještě vyřeším složitější instance (218 klauzulí, 50 proměnných), u kterých ale neočekávám nejlepší výsledky.
+
+
+\begin{figure}[H]
+  \begin{center}
+    \includegraphics[height=6cm]{graphs/hard-instances.png}
+  \end{center}
+  % \caption{Graf vývoje fitness}\label{fig1}
+\end{figure}
+
+
+
+
+
+\\
+1-hard-instances:
+\\
+
+
+
+
+\begin{tabular}{lrrrrrl}
+\toprule
+        price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+ 9317 &         50 &        218 &        210 &    1711 &  False \\
+\bottomrule
+\end{tabular}
+
+
+
+
+
+\\
+2-hard-instances:
+\\
+
+
+\begin{tabular}{lrrrrrl}
+\toprule
+        price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+  9236 &         50 &        218 &        211 &     968 &  False \\
+\bottomrule
+\end{tabular}
+
+
+
+
+
+
+\\
+3-hard-instances:
+\\
+
+
+
+\begin{tabular}{lrrrrrl}
+\toprule
+        price &  variables &  clausules &  satisfied &  weight &  valid \\
+\midrule
+  9206 &         50 &        218 &        208 &    1446 &  False \\
+\bottomrule
+\end{tabular}
+
+S plným úspěchem se bohužel nesetkáváme nikdy. Úspěšnost řešení měřím v procentech nalezených splněných klauzulí. Vím, že tyto instance jsou vysoce náročné a ani jsem neočekával, že bych svým algoritmem tyto instance úspěšně řešil.
+
+Průměrně bylo dosaženo 96.6\% nalezených splněných klauzulí při 218 klauzulích na 50 proměnných (poměr 4.36, náročný).
+
 \section{Shrnutí a závěr}
 
-Pokročilá iterativní metoda je nesmírně efektivní při velkých počtech předmětů v instanci.
+Pokročilá iterativní metoda je nesmírně (časově) efektivní při velkých počtech klauzulí a proměnných v instanci.
+
+U instancí velikosti 40, 70 klauzulí jsme schopni nalézt optimální řešení téměř vždy napoprvé, u velikosti 91 občas je zapotřebí více běhů, ale také jsme schopni nalézt optimální řešení. 
+
+
+Lehce horší je to u instancí s 218 klauzulemi, 50 proměnnými. Ale jak vidíme v předchozí kapitolce, přesnost se pohybuje nad 90\%.
 
 Přesnost se pohybuje kolem 90-100\% (tj, relativní chyba většinou menší, než 10\%) a čas strávený výpočtem je několikařádově menší, než při použití jiných metod.
 
 Implementace byla úspěšná a napsána pro jednoduchou výměnu batůžku  na SAT. \\
 Pro vytváření grafů bylo využito Python notebooku, který je přiložen v adresáři \textbf{report/}. Grafy jsou vykresleny pomocí knihovny \textbf{mathplotlib}.
 
-\section{Reference}
+% \section{Reference}
 
 
 % Tady okomentujte k čemu se váš evoluční algoritmus dopracoval, co se vám povedlo, co ne a jak by to šlo vylepšit. Jakého nejlepšího řešení se vám podařilo dosáhnout. Klidně i napište, co se vám na semestrální práci líbilo a taky co byste raději měli jinak. Uvítáme jakékoli nápady. 

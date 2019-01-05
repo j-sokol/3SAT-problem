@@ -9,7 +9,7 @@ class InstanceSolution(object):
         return (self.no_items, self.best_cost, self.best_combination) == (other.no_items, other.best_cost,other.best_combination)
 
     def __repr__(self):
-        return "price,variables,clausules,satisfied,weight\n{},{},{},{},{}".format(str(self.best_cost), str(self.variables), str(self.clauses), str(self.satisfied), str(self.weight))
+        return "price,variables,clausules,satisfied,weight,valid\n{},{},{},{},{},{}".format(str(self.best_cost), str(self.variables), str(self.clauses), str(self.satisfied), str(self.weight), str(self.valid))
         # return "{} {} {}".format(str(self.no_items), str(self.best_cost), str(self.best_combination))
 
     def get_id(self):

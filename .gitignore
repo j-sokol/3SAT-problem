@@ -3,3 +3,5 @@
 csvs/*
 .DS_Store
 __venv__/*
+__pycache__
+*.pyc

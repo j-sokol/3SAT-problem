@@ -21,8 +21,6 @@ class Genetic(Solver):
                 tournament_count=16, tournament_pool_size=2, generations=1000, verbose=False, constant=0.9):
         super(Genetic, self).__init__()
         self.population_size = 100
-        # self.items = []
-        # self.capacity = 0
 
         self.constant = constant
         self.xover_probability = xover_probability
@@ -52,31 +50,16 @@ class Genetic(Solver):
         return prices, weights
         
     def count_satisfied_formulas(self, individual):
-        # print("genom:_____")
-        # for i in individual:
-            # print(i, sep=" ")
-        # print("individual:", individual)
         acc = 0
 
         for clause in self.formula:
-            # print(clause)
-            # print("-----")
             for var in clause:
                 index = abs(var) - 1
                 if (var <0 and individual[index] == 1) or (var >0 and individual[index] == 0):
-                    # print("Mam te!")
-                    # print(var)
-                    # print(index)
                     acc += 1
                     break
 
-                # print("------")
-
-
-        # print("------")
-
         return acc
-        pass
 
     def sum_valid_weights(self, individual):
         sum_val = 0
@@ -86,36 +69,15 @@ class Genetic(Solver):
 
         return sum_val
 
-        pass
 
     def fitness_fn(self, individual):
 
         satisfied = self.count_satisfied_formulas(individual)
         sum_weights = self.sum_valid_weights(individual)
 
-        # k = 0.9
-
-        # print("Satisfied",satisfied)
-        # print("sum",sum_weights)
-        # price = 0
-        # weight = 0
-        # print(individual)
-
         fitness = 10000.0 * math.log(self.constant * math.exp(satisfied / self.clauses) + (1.0 - self.constant) * math.exp(sum_weights / self.maximum))
 
-
-        # print("fitnessko", fitness)
-
-
         return fitness
-        # for index, item in enumerate(population):
-        #     if item == True:
-        #         price = price + self.items[index]['price']
-        #         weight = weight + self.items[index]['weight']
-        # if weight <= self.capacity:
-        #     return price
-        # else:
-        #     return 0
 
     def constraint_fn(self, individual):
         satisfied = self.count_satisfied_formulas(individual)
@@ -123,14 +85,6 @@ class Genetic(Solver):
         if satisfied == self.clauses:
             return True
         return False
-
-        # weight = 0
-        # for index, item in enumerate(population):
-        #     if item == True:
-        #         weight = weight + self.items[index]['weight']
-
-        # return weight <= self.capacity
-        pass
 
     def create_individual(self, indiv_size):
         individual = [ random.choice([1, 0]) for i in range(0, indiv_size)]
@@ -200,10 +154,8 @@ class Genetic(Solver):
             print("generation,best_combination")
             best = 0
 
-        # print('lets run generations')
         # Run n generations
         for generation in range(0, self.generations):
-            # print("gen no ", generation)
             sorted_population = self.sort_population(population)
 
             new_best = self.fitness_fn(sorted_population[0])
@@ -264,7 +216,6 @@ class Genetic(Solver):
 
         self.maximum = sum(instance.weights)
 
-        # print("max:", self.maximum)
 
         self.genome_size = instance.variables
         self.weights = instance.weights
@@ -284,5 +235,6 @@ class Genetic(Solver):
             variables=instance.variables,
             clauses=instance.clauses,
             weight=self.sum_valid_weights(best),
+            valid=self.constraint_fn(best),
             best_combination=best)
 
